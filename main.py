@@ -4,13 +4,13 @@ import json
 
 app = Flask(__name__)
 
-API_KEY = "your_custom_api_key"
+API_KEY = "HRK-98FD-2A6B-7C3D-5E1G"
 
 # Define model name mappings
 MODEL_NAME_MAP = {
-    "llama": "meta-llama/Llama-3-70b-chat-hf",
-    "gpt-3.5": "gpt-3.5-turbo-0125",
-    "mixtral": "mistralai/Mixtral-8x7B-Instruct-v0.1"
+    "llama-3": "meta-llama/Llama-3-70b-chat-hf",
+    "gpt-3.5-turbo": "gpt-3.5-turbo-0125",
+    "mixtral-8x7B": "mistralai/Mixtral-8x7B-Instruct-v0.1"
 }
 
 def extract_vqd():
