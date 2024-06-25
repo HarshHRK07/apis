@@ -1,17 +1,27 @@
-from flask import Flask, request, jsonify
 import requests
 import json
+import secrets
+import threading
+from flask import Flask, request, jsonify
+import telebot
 
+# Configuration
+API_KEY_FILE = 'api_keys.txt'
+OWNER_CHAT_ID = '6460703454'  # Replace with your Telegram chat ID
+TELEGRAM_BOT_TOKEN = '7195510626:AAEESkdWYtD8sG-qKgHW6Sod0AsdS3E4zmY'  # Replace with your Telegram bot token
+
+# Flask app
 app = Flask(__name__)
-
-API_KEY = "HRK-98FD-2A6B-7C3D-5E1G"
 
 # Define model name mappings
 MODEL_NAME_MAP = {
-    "llama-3": "meta-llama/Llama-3-70b-chat-hf",
+    "llama-3-70B": "meta-llama/Llama-3-70b-chat-hf",
     "gpt-3.5-turbo": "gpt-3.5-turbo-0125",
     "mixtral-8x7B": "mistralai/Mixtral-8x7B-Instruct-v0.1"
 }
+
+# Telegram bot
+bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
 
 def extract_vqd():
     status_url = "https://duckduckgo.com/duckchat/v1/status"
@@ -33,16 +43,19 @@ def extract_vqd():
 
     raise ValueError("vqd value not found in the response headers")
 
-def chat_with_model(model, content):
+def chat_with_model(model, system_message, content):
     vqd_value = extract_vqd()
     chat_url = "https://duckduckgo.com/duckchat/v1/chat"
+
+    # Prepend the system message to the user's message
+    combined_message = f"{system_message} {content}"
 
     payload = json.dumps({
         "model": model,
         "messages": [
             {
                 "role": "user",
-                "content": content
+                "content": combined_message
             }
         ]
     })
@@ -78,16 +91,22 @@ def parse_response(lines):
 
     return ''.join(message_parts)
 
+def is_valid_api_key(api_key):
+    with open(API_KEY_FILE, 'r') as f:
+        valid_api_keys = f.read().splitlines()
+    return api_key in valid_api_keys
+
 @app.route('/chat', methods=['POST'])
 def chat():
     data = request.json
 
     api_key = data.get('api_key')
-    if api_key != API_KEY:
+    if not is_valid_api_key(api_key):
         return jsonify({"error": "Invalid API key"}), 403
 
     short_model_name = data.get('model')
     content = data.get('prompt')
+    system_message = data.get('system_message', "You are a helpful assistant.")
 
     if not short_model_name or not content:
         return jsonify({"error": "Model and prompt are required"}), 400
@@ -98,11 +117,38 @@ def chat():
         return jsonify({"error": "Invalid model name"}), 400
 
     try:
-        lines = chat_with_model(model, content)
+        lines = chat_with_model(model, system_message, content)
         complete_message = parse_response(lines)
         return jsonify({"response": complete_message})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-if __name__ == "__main__":
+@bot.message_handler(commands=['start'])
+def send_welcome(message):
+    bot.reply_to(message, "Hi! Use /generate to create a new API key.")
+
+@bot.message_handler(commands=['generate'])
+def generate_api_key(message):
+    if str(message.chat.id) != OWNER_CHAT_ID:
+        bot.reply_to(message, "You are not authorized to generate API keys.")
+        return
+
+    new_api_key = f"HRK-{secrets.token_hex(4).upper()}-{secrets.token_hex(4).upper()}-{secrets.token_hex(4).upper()}"
+    with open(API_KEY_FILE, 'a') as f:
+        f.write(new_api_key + '\n')
+
+    bot.reply_to(message, f'New API key generated: {new_api_key}')
+
+def start_flask():
     app.run(host='0.0.0.0', port=5000)
+
+def start_telegram_bot():
+    bot.polling()
+
+if __name__ == "__main__":
+    # Start Flask in a separate thread
+    flask_thread = threading.Thread(target=start_flask)
+    flask_thread.start()
+
+    # Start Telegram bot
+    start_telegram_bot()
