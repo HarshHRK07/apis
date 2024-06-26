@@ -140,7 +140,7 @@ def generate_api_key(message):
     bot.reply_to(message, f'New API key generated: {new_api_key}')
 
 def start_flask():
-    app.run(host='0.0.0.0', port=5000)
+    app.run()
 
 def start_telegram_bot():
     bot.polling()
