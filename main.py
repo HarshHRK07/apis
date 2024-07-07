@@ -28,7 +28,6 @@ def confirm_payment_intent_with_payment_method(client_secret, card_details, publ
         exp_month = card_info[1]
         exp_year = card_info[2]
         # Ignore the CVC part
-        # cvc = card_info[3]
 
         url = f"{PAYMENT_INTENT_URL}/{client_secret.split('_secret_')[0]}/confirm"
         payload = (
@@ -88,7 +87,6 @@ def format_response(card_details, response, bin_info, time_taken, failed_3ds=Fal
         exp_month = card_info[1]
         exp_year = card_info[2]
         # Ignore the CVC part
-        # cvc = card_info[3] if len(card_info) > 3 else 'N/A'
 
         status = response.get('status', '3DS')
         amount = response.get('amount', 'N/A')
@@ -107,7 +105,7 @@ def format_response(card_details, response, bin_info, time_taken, failed_3ds=Fal
         professional_signature = (
             "──────────────────────────────────\n"
             "🔒 Processed securely by:\n"
-            "  Harsh, API Solutions \n"
+            "  Harsh, API Solutions\n"
             "──────────────────────────────────"
         )
 
@@ -177,6 +175,8 @@ def inbuilt():
         if 'error' in first_confirm_response:
             return jsonify(first_confirm_response), 400
 
+        final_response = first_confirm_response
+
         if first_confirm_response.get('status') == 'requires_action':
             three_ds_source = first_confirm_response['next_action']['use_stripe_sdk']['three_d_secure_2_source']
             auth_response = authenticate_3ds(three_ds_source, client_secret, public_key)
@@ -187,17 +187,14 @@ def inbuilt():
                 final_response = confirm_payment_intent_after_3ds(first_confirm_response['id'], client_secret, public_key)
                 if 'error' in final_response:
                     return jsonify(final_response), 400
-
-                result = format_response(card_details, final_response, bin_info, time.time() - start_time)
             else:
-                result = format_response(card_details, auth_response, bin_info, time.time() - start_time, failed_3ds=True)
-        else:
-            result = format_response(card_details, first_confirm_response, bin_info, time.time() - start_time)
+                final_response = auth_response
 
+        result = format_response(card_details, final_response, bin_info, time.time() - start_time)
         return jsonify({"message": result})
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=True)
-        
+            
