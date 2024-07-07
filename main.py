@@ -71,11 +71,10 @@ def confirm_payment_intent_after_3ds(payment_intent_id, client_secret, public_ke
             'key': public_key,
             'client_secret': client_secret
         }
-        headers = COMMON_HEADERS.copy()
         if stripe_account:
-            headers['Stripe-Account'] = stripe_account
+            params['_stripe_account'] = stripe_account
 
-        response = requests.get(url, params=params, headers=headers)
+        response = requests.get(url, params=params, headers=COMMON_HEADERS)
         return response.json()
     except Exception as e:
         return {'error': str(e)}
@@ -113,7 +112,7 @@ def format_response(card_details, response, bin_info, time_taken, failed_3ds=Fal
         professional_signature = (
             "──────────────────────────────────\n"
             "🔒 Processed securely by:\n"
-            "  Harsh, API Solutions\n"
+            "  Harsh, API Solutions Specialist\n"
             "──────────────────────────────────"
         )
 
@@ -206,4 +205,4 @@ def inbuilt():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=True)
-    
+        
