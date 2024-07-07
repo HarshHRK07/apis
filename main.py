@@ -21,7 +21,7 @@ COMMON_HEADERS = {
     'referer': "https://js.stripe.com/"
 }
 
-def confirm_payment_intent_with_payment_method(client_secret, card_details, public_key):
+def confirm_payment_intent_with_payment_method(client_secret, card_details, public_key, stripe_account=None):
     try:
         card_info = card_details.split('|')
         card_number = card_info[0]
@@ -37,7 +37,11 @@ def confirm_payment_intent_with_payment_method(client_secret, card_details, publ
             f"payment_method_data%5Bbilling_details%5D%5Baddress%5D%5Bcountry%5D=IN&"
             f"key={public_key}&client_secret={client_secret}"
         )
-        response = requests.post(url, data=payload, headers=COMMON_HEADERS)
+        headers = COMMON_HEADERS.copy()
+        if stripe_account:
+            headers['Stripe-Account'] = stripe_account
+
+        response = requests.post(url, data=payload, headers=headers)
         return response.json()
     except Exception as e:
         return {'error': str(e)}
@@ -60,14 +64,18 @@ def authenticate_3ds(source, client_secret, public_key):
     except Exception as e:
         return {'error': str(e)}
 
-def confirm_payment_intent_after_3ds(payment_intent_id, client_secret, public_key):
+def confirm_payment_intent_after_3ds(payment_intent_id, client_secret, public_key, stripe_account=None):
     try:
         url = f"{PAYMENT_INTENT_URL}/{payment_intent_id}"
         params = {
             'key': public_key,
             'client_secret': client_secret
         }
-        response = requests.get(url, params=params, headers=COMMON_HEADERS)
+        headers = COMMON_HEADERS.copy()
+        if stripe_account:
+            headers['Stripe-Account'] = stripe_account
+
+        response = requests.get(url, params=params, headers=headers)
         return response.json()
     except Exception as e:
         return {'error': str(e)}
@@ -166,12 +174,13 @@ def inbuilt():
         public_key = request.args.get('pk')
         client_secret = request.args.get('cs')
         card_details = request.args.get('cc')
+        stripe_account = request.args.get('act')
 
         bin_info = get_bin_info(card_details.split('|')[0])
         if 'error' in bin_info:
             return jsonify(bin_info), 400
 
-        first_confirm_response = confirm_payment_intent_with_payment_method(client_secret, card_details, public_key)
+        first_confirm_response = confirm_payment_intent_with_payment_method(client_secret, card_details, public_key, stripe_account)
         if 'error' in first_confirm_response:
             return jsonify(first_confirm_response), 400
 
@@ -184,7 +193,7 @@ def inbuilt():
                 return jsonify(auth_response), 400
 
             if auth_response.get('state') == 'succeeded':
-                final_response = confirm_payment_intent_after_3ds(first_confirm_response['id'], client_secret, public_key)
+                final_response = confirm_payment_intent_after_3ds(first_confirm_response['id'], client_secret, public_key, stripe_account)
                 if 'error' in final_response:
                     return jsonify(final_response), 400
             else:
@@ -197,4 +206,4 @@ def inbuilt():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=True)
-            
+    
