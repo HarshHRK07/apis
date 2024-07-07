@@ -83,60 +83,60 @@ def format_response(card_details, response, bin_info, time_taken, failed_3ds=Fal
     three_ds_status = response.get('next_action', {}).get('use_stripe_sdk', {}).get('three_d_secure_2_source', 'N/A')
 
     info_message = (
-        f"𝗜𝗻𝗳𝗼: {bin_info.get('brand', 'N/A')} - {bin_info.get('type', 'N/A')} - {bin_info.get('level', 'N/A')}\n"
-        f"𝐈𝐬𝐬𝐮𝐞𝐫: {bin_info.get('bank', 'N/A')}\n"
-        f"𝐂𝐨𝐮𝐧𝐭𝐫𝐲: {bin_info.get('country_name', 'N/A')} {bin_info.get('country_flag', '')}\n"
+        f"Info: {bin_info.get('brand', 'N/A')} - {bin_info.get('type', 'N/A')} - {bin_info.get('level', 'N/A')}\n"
+        f"Issuer: {bin_info.get('bank', 'N/A')}\n"
+        f"Country: {bin_info.get('country_name', 'N/A')} {bin_info.get('country_flag', '')}\n"
     )
 
     professional_signature = (
         "──────────────────────────────────\n"
         "🔒 Processed securely by:\n"
-        "  𝗛𝗮𝗿𝘀𝗵, API Solutions \n"
+        "  Harsh, API Solutions Specialist\n"
         "──────────────────────────────────"
     )
 
     if status == 'succeeded':
         status_message = (
-            f"𝐀𝐩𝐩𝐫𝐨𝐯𝐞𝐝 ✅\n\n"
-            f"𝗖𝗮𝗿𝗱: {card_number}|{exp_month}|{exp_year}|{cvc}\n"
-            f"𝐒𝐭𝐚𝐭𝐮𝐬: {status}\n"
-            f"𝐑𝐞𝐬𝐩𝐨𝐧𝐬𝐞: Payment successful.\n"
+            f"Approved ✅\n\n"
+            f"Card: {card_number}|{exp_month}|{exp_year}|{cvc}\n"
+            f"Status: {status}\n"
+            f"Response: Payment successful.\n"
             f"Amount: {amount / 100:.2f} {currency}\n"
             f"Description: {description}\n"
             f"{info_message}"
-            f"𝗧𝗶𝗺𝗲: {time_taken:.2f} seconds\n"
+            f"Time: {time_taken:.2f} seconds\n"
             f"{professional_signature}"
         )
     elif status == 'requires_action' and not failed_3ds:
         status_message = (
-            f"𝐑𝐞𝐪𝐮𝐢𝐫𝐞𝐬 𝐀𝐜𝐭𝐢𝐨𝐧 ⚠️\n\n"
-            f"𝗖𝗮𝗿𝗱: {card_number}|{exp_month}|{exp_year}|{cvc}\n"
-            f"𝐒𝐭𝐚𝐭𝐮𝐬: {status}\n"
-            f"𝐑𝐞𝐬𝐩𝐨𝐧𝐬𝐞: Payment requires additional action.\n"
+            f"Requires Action ⚠️\n\n"
+            f"Card: {card_number}|{exp_month}|{exp_year}|{cvc}\n"
+            f"Status: {status}\n"
+            f"Response: Payment requires additional action.\n"
             f"3DS Verification Status: {three_ds_status}\n"
             f"{info_message}"
-            f"𝗧𝗶𝗺𝗲: {time_taken:.2f} seconds\n"
+            f"Time: {time_taken:.2f} seconds\n"
             f"{professional_signature}"
         )
     elif failed_3ds:
         status_message = (
-            f"𝐃𝐞𝐜𝐥𝐢𝐧𝐞𝐝 ❌\n\n"
-            f"𝗖𝗮𝗿𝗱: {card_number}|{exp_month}|{exp_year}|{cvc}\n"
-            f"𝐒𝐭𝐚𝐭𝐮𝐬: {status}\n"
-            f"𝐑𝐞𝐬𝐩𝐨𝐧𝐬𝐞: 3DS Verification Failed❌\n"
+            f"Declined ❌\n\n"
+            f"Card: {card_number}|{exp_month}|{exp_year}|{cvc}\n"
+            f"Status: {status}\n"
+            f"Response: 3DS Verification Failed❌\n"
             f"{info_message}"
-            f"𝗧𝗶𝗺𝗲: {time_taken:.2f} seconds\n"
+            f"Time: {time_taken:.2f} seconds\n"
             f"{professional_signature}"
         )
     else:
         status_message = (
-            f"𝐃𝐞𝐜𝐥𝐢𝐧𝐞𝐝 ❌\n\n"
-            f"𝗖𝗮𝗿𝗱: {card_number}|{exp_month}|{exp_year}|{cvc}\n"
-            f"𝐒𝐭𝐚𝐭𝐮𝐬: {status}\n"
-            f"𝐑𝐞𝐬𝐩𝐨𝐧𝐬𝐞: {error_message}\n"
+            f"Declined ❌\n\n"
+            f"Card: {card_number}|{exp_month}|{exp_year}|{cvc}\n"
+            f"Status: {status}\n"
+            f"Response: {error_message}\n"
             f"Decline Code: {decline_code}\n"
             f"{info_message}"
-            f"𝗧𝗶𝗺𝗲: {time_taken:.2f} seconds\n"
+            f"Time: {time_taken:.2f} seconds\n"
             f"{professional_signature}"
         )
 
@@ -173,4 +173,4 @@ def inbuilt():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=True)
-  
+                    
