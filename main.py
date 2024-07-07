@@ -91,7 +91,7 @@ def format_response(card_details, response, bin_info, time_taken, failed_3ds=Fal
     professional_signature = (
         "──────────────────────────────────\n"
         "🔒 Processed securely by:\n"
-        "  Harsh, API Solutions Specialist\n"
+        "  Harsh, API Solutions \n"
         "──────────────────────────────────"
     )
 
