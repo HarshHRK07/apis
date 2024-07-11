@@ -24,10 +24,7 @@ def confirm_payment_intent_with_payment_method(client_secret, card_details, publ
         card_number = card_info[0]
         exp_month = card_info[1]
         exp_year = card_info[2]
-        if include_cvc:
-            cvc = card_info[3]
-        else:
-            cvc = None
+        cvc = card_info[3] if include_cvc and len(card_info) > 3 else None
 
         url = f"{PAYMENT_INTENT_URL}/{client_secret.split('_secret_')[0]}/confirm"
         payload = (
@@ -157,4 +154,4 @@ def inbuilt_cvv():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=True)
-  
+    
